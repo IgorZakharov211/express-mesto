@@ -1,17 +1,14 @@
-const path = require('path');
-const getDataFromFile = require('../helpers/files');
-
-const dataPath = path.join(__dirname, '..', 'data', 'users.json');
+const User = require('../models/user');
 
 const getUsers = (req, res) => {
-  return getDataFromFile(dataPath)
+  User.find({})
     .then(users => res.send(users))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка сервера'}));
 };
 
 const getProfile = (req, res) => {
-  return getDataFromFile(dataPath)
-    .then(users => users.find(user => user._id === req.params._id))
+  const _id = req.params;
+  User.findOne({_id})
     .then((user) => {
       if(!user){
         return res.status(404).send({message: 'Нет пользователя с таким id'})
@@ -21,5 +18,16 @@ const getProfile = (req, res) => {
     .catch(() => res.status(500).send({ message: 'Произошла ошибка сервера'}));
 };
 
+const createUser = (req, res) =>{
+  return User.countDocuments()
+    .then(count =>{
+      return User.create({id: count, ...req.body})
+        .then(user =>{
+          res.status(200).send(user)
+        })
+        .catch(err => res.status(400).send({err}))
+    })
+}
 
-module.exports = {getUsers, getProfile};
+
+module.exports = {getUsers, getProfile, createUser};

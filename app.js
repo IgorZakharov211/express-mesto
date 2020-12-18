@@ -5,6 +5,7 @@ const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
 const notFoundRouter = require('./routes/notFound.js');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 const { PORT = 3000} = process.env;
 
@@ -13,11 +14,18 @@ mongoose.connect('mongodb://localhost:27017/mestodb',{
   useFindAndModify: false,
   useCreateIndex: true
 });
-
+app.use((req, res, next) => {
+  req.user = {
+    _id: '5fdc85c7526088316013aced'
+  };
+  next();
+});
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
 app.use('/', notFoundRouter);
+
 
 app.listen(PORT, () => {
     console.log(`App listening on port ${PORT}`)
