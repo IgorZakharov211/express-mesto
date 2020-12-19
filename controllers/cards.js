@@ -1,9 +1,15 @@
 const Card = require('../models/card');
 
+const checkErr= (res, err) => {
+  const ERROR_CODE = 400;
+  if(err.name === 'ErrorName') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
+  else return res.status(500).send({ message: 'Произошла ошибка сервера'})
+}
+
 const getCards = (req, res) => {
   Card.find({})
     .then(cards => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка сервера'}));
+    .catch(err => checkErr(res, err));
 };
 
 const createCard = (req, res) =>{
@@ -13,15 +19,35 @@ const createCard = (req, res) =>{
         .then(card =>{
           res.status(200).send(card)
         })
-        .catch(err => res.status(400).send({err}))
+        .catch(err => checkErr(res, err));
     })
 }
 
 const deleteCard = (req, res) => {
   return Card.findByIdAndRemove(req.params._id)
   .then(card => res.send({ data: card }))
-  .catch(err => res.status(500).send({ message: 'Произошла ошибка' }));
+  .catch(err => checkErr(res, err));
+}
+
+const likeCard = (req, res) => {
+  return Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+  .then(card => res.send({data: card}))
+  .catch(err => checkErr(res, err));
+}
+
+const dislikeCard = (req, res) => {
+  return Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
+  .then(card => res.send({data: card}))
+  .catch(err => checkErr(res, err));
 }
 
 
-module.exports = {getCards, createCard, deleteCard};
+module.exports = {getCards, createCard, deleteCard, likeCard, dislikeCard};
