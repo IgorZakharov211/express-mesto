@@ -1,15 +1,9 @@
 const Card = require('../models/card');
 
-const checkErr= (res, err) => {
-  const ERROR_CODE = 400;
-  if(err.name === 'ErrorName') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
-  else return res.status(500).send({ message: 'Произошла ошибка сервера'})
-}
-
 const getCards = (req, res) => {
   Card.find({})
     .then(cards => res.send(cards))
-    .catch(err => checkErr(res, err));
+    .catch(err => {return res.status(500).send({message: 'Произошла ошибка сервера'})});
 };
 
 const createCard = (req, res) =>{
@@ -19,14 +13,24 @@ const createCard = (req, res) =>{
         .then(card =>{
           res.status(200).send(card)
         })
-        .catch(err => checkErr(res, err));
+        .catch(err => {
+          console.log(err.name);
+          const ERROR_CODE = 400;
+          if(err.name === 'ValidationError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
+          else return res.status(500).send({ message: 'Произошла ошибка сервера'})
+        });
     })
 }
 
 const deleteCard = (req, res) => {
   return Card.findByIdAndRemove(req.params._id)
-  .then(card => res.send({ data: card }))
-  .catch(err => checkErr(res, err));
+  .then(card => {
+    if(!card){
+      return res.status(404).send({message: "Карточка с таким id не найдена"})
+    }
+    return res.status(200).send(card)
+  })
+  .catch(err => {return res.status(500).send({message: 'Произошла ошибка сервера'})});
 }
 
 const likeCard = (req, res) => {
@@ -36,7 +40,11 @@ const likeCard = (req, res) => {
     { new: true },
   )
   .then(card => res.send({data: card}))
-  .catch(err => checkErr(res, err));
+  .catch(err => {
+    const ERROR_CODE = 400;
+    if(err.name === 'ErrorName') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
+    else return res.status(500).send({ message: 'Произошла ошибка сервера'})
+  });
 }
 
 const dislikeCard = (req, res) => {
@@ -46,7 +54,11 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
   .then(card => res.send({data: card}))
-  .catch(err => checkErr(res, err));
+  .catch(err => {
+    const ERROR_CODE = 400;
+    if(err.name === 'ErrorName') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
+    else return res.status(500).send({ message: 'Произошла ошибка сервера'})
+  });
 }
 
 
