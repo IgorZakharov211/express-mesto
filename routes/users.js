@@ -5,6 +5,6 @@ router.get('/users', getUsers);
 router.get('/users/:_id', getProfile);
 router.post('/users', createUser);
 router.patch('/users/me', updateProfile);
-router.patch('/users/avatar', updateAvatar);
+router.patch('/users/me/avatar', updateAvatar);
 
 module.exports = router;

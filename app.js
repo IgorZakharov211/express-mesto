@@ -3,7 +3,6 @@ const app = express();
 const path = require('path');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
-const notFoundRouter = require('./routes/notFound.js');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
@@ -24,7 +23,9 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
-app.use('/', notFoundRouter);
+app.use(function(req, res, next){
+  res.status(404).send({message: "Запрашиваемый ресурс не найден"})
+});
 
 
 app.listen(PORT, () => {
