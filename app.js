@@ -23,7 +23,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
-app.use(function(req, res, next){
+app.use(function(req, res){
   res.status(404).send({message: "Запрашиваемый ресурс не найден"})
 });
 

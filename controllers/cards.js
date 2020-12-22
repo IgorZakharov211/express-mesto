@@ -33,7 +33,6 @@ const deleteCard = (req, res) => {
     const ERROR_CODE = 400;
     if(err.name === 'CastError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
     return res.status(500).send({message: 'Произошла ошибка сервера'})
-
   });
 }
 
@@ -43,7 +42,12 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-  .then(card => res.send({data: card}))
+  .then(card => {
+    if(!card){
+      return res.status(404).send({message: "Карточка с таким id не найдена"})
+    }
+    return res.send({data: card})
+  })
   .catch(err => {
     const ERROR_CODE = 400;
     if(err.name === 'CastError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
@@ -57,7 +61,12 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-  .then(card => res.send({data: card}))
+  .then(card => {
+    if(!card){
+      return res.status(404).send({message: "Карточка с таким id не найдена"})
+    }
+    return res.send({data: card})
+  })
   .catch(err => {
     const ERROR_CODE = 400;
     if(err.name === 'CastError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
