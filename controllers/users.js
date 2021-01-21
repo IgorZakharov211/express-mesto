@@ -1,4 +1,6 @@
 const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const getUsers = (req, res) => {
   User.find({})
@@ -23,18 +25,29 @@ const getProfile = (req, res) => {
 };
 
 const createUser = (req, res) =>{
+  bcrypt.hash(req.body.password, 10)
+  .then((hash) =>{
   return User.countDocuments()
     .then(count =>{
-      return User.create({id: count, name: req.body.name, about: req.body.about, avatar: req.body.avatar})
+      return User.create({
+        id: count,
+        name: req.body.name,
+        about: req.body.about,
+        avatar: req.body.avatar,
+        email: req.body.email,
+        password: hash
+      })
         .then(user =>{
           res.send(user)
         })
         .catch(err => {
+          console.log(err)
           const ERROR_CODE = 400;
           if(err.name === 'ValidationError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
           else return res.status(500).send({ message: 'Произошла ошибка сервера'})
         });
     })
+  })
 }
 
 const updateProfile = (req, res) =>{
@@ -69,5 +82,21 @@ const updateAvatar = (req, res) =>{
   });
 }
 
+const login = (req, res) => {
+  const { email, password } = req.body;
 
-module.exports = {getUsers, getProfile, createUser, updateProfile, updateAvatar};
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        '316c7c36e8ec989fa03ca0b25e0526db',
+        {expiresIn: '7d'}
+        );
+      res.send({ token });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+}
+
+module.exports = {getUsers, getProfile, createUser, updateProfile, updateAvatar, login};
