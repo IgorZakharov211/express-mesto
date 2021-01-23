@@ -5,7 +5,8 @@ const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-
+const {createUser, login} = require('./controllers/users');
+const auth = require('./middlewares/auth');
 const { PORT = 3000} = process.env;
 
 mongoose.connect('mongodb://localhost:27017/mestodb',{
@@ -21,6 +22,9 @@ app.use((req, res, next) => {
 });
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.post('/signin', login);
+app.post('/signup', createUser);
+app.use(auth);
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
 app.use(function(req, res){
