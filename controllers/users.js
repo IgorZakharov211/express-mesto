@@ -3,12 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const NotFoundError = require('../errors/not-found-err');
 const AuthError = require('../errors/auth-error');
-const ValidationError = require('../errors/validation-error');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then(users => res.send(users))
-    .catch(err => {return res.status(500).send({message: 'Произошла ошибка сервера'})});
+    .catch(next);
 };
 
 const getUser = (req, res, next) => {
@@ -35,7 +34,7 @@ const getProfile = (req, res, next) => {
     .catch(next);
 };
 
-const createUser = (req, res) =>{
+const createUser = (req, res, next) =>{
   bcrypt.hash(req.body.password, 10)
   .then((hash) =>{
   return User.countDocuments()
@@ -51,16 +50,12 @@ const createUser = (req, res) =>{
         .then(user =>{
           res.send(user)
         })
-        .catch(err => {
-          const ERROR_CODE = 400;
-          if(err.name === 'ValidationError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
-          else return res.status(500).send({ message: 'Произошла ошибка сервера'})
-        });
+        .catch(next);
     })
   })
 }
 
-const updateProfile = (req, res) =>{
+const updateProfile = (req, res, next) =>{
   return User.findByIdAndUpdate(req.user._id, {name: req.body.name, about: req.body.about}, {new: true})
   .then(user =>{
     if(!user){
@@ -69,14 +64,10 @@ const updateProfile = (req, res) =>{
       return res.send({data: user})
     }
   })
-  .catch(err => {
-    if(err.name === 'ValidationError' || err.name === 'CastError') {
-      throw new ValidationError('Переданы некорректные данные');
-    } else next();
-  });
+  .catch(next);
 }
 
-const updateAvatar = (req, res) =>{
+const updateAvatar = (req, res, next) =>{
   return User.findByIdAndUpdate(req.user._id, {avatar: req.body.avatar}, {new: true})
   .then(user =>{
     if(!user){
@@ -85,11 +76,7 @@ const updateAvatar = (req, res) =>{
       res.send({data: user})
     }
   })
-  .catch(err => {
-    if(err.name === 'ValidationError' || err.name === 'CastError') {
-      throw new ValidationError('Переданы некорректные данные');
-    } else next();
-  });
+  .catch(next);
 }
 
 const login = (req, res, next) => {

@@ -1,42 +1,35 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then(cards => res.send(cards))
-    .catch(err => {return res.status(500).send({message: 'Произошла ошибка сервера'})});
+    .catch(next);
 };
 
-const createCard = (req, res) =>{
+const createCard = (req, res, next) =>{
  return Card.countDocuments()
     .then(count =>{
       return Card.create({id: count,  owner: req.user._id, ...req.body})
         .then(card =>{
           res.send(card)
         })
-        .catch(err => {
-          const ERROR_CODE = 400;
-          if(err.name === 'ValidationError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
-          else return res.status(500).send({ message: 'Произошла ошибка сервера'})
-        });
+        .catch(next);
     })
 }
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   return Card.findByIdAndRemove(req.params._id)
   .then(card => {
     if(!card){
-      return res.status(404).send({message: "Карточка с таким id не найдена"})
+      throw new NotFoundError('Карточка с таким id не найдена');
     }
     return res.send(card)
   })
-  .catch(err => {
-    const ERROR_CODE = 400;
-    if(err.name === 'CastError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
-    return res.status(500).send({message: 'Произошла ошибка сервера'})
-  });
+  .catch(next);
 }
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   return Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -44,18 +37,14 @@ const likeCard = (req, res) => {
   )
   .then(card => {
     if(!card){
-      return res.status(404).send({message: "Карточка с таким id не найдена"})
+      throw new NotFoundError('Карточка с таким id не найдена');
     }
     return res.send({data: card})
   })
-  .catch(err => {
-    const ERROR_CODE = 400;
-    if(err.name === 'CastError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
-    else return res.status(500).send({ message: 'Произошла ошибка сервера'})
-  });
+  .catch(next);
 }
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   return Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -63,15 +52,11 @@ const dislikeCard = (req, res) => {
   )
   .then(card => {
     if(!card){
-      return res.status(404).send({message: "Карточка с таким id не найдена"})
+      throw new NotFoundError('Карточка с таким id не найдена');
     }
     return res.send({data: card})
   })
-  .catch(err => {
-    const ERROR_CODE = 400;
-    if(err.name === 'CastError') return res.status(ERROR_CODE).send({message: 'Переданы некорректные данные'})
-    else return res.status(500).send({ message: 'Произошла ошибка сервера'})
-  });
+  .catch(next);
 }
 
 

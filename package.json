@@ -10,10 +10,13 @@
   "author": "Zakharov Igor",
   "license": "ISC",
   "devDependencies": {
+    "celebrate": "^13.0.4",
     "eslint": "^7.14.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "nodemon": "^2.0.6"
+    "express-winston": "^4.0.5",
+    "nodemon": "^2.0.6",
+    "winston": "^3.3.3"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
